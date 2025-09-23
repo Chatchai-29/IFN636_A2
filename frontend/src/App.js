@@ -1,3 +1,4 @@
+// src/App.js
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
@@ -17,25 +18,26 @@ import Vetprofile from './pages/Vetprofile.jsx';
 import Vetlogin from "./pages/Vetlogin";
 import OwnerLogin from "./pages/OwnerLogin";
 
+// ✅ NEW: import RoleRoute
+import RoleRoute from "./components/RoleRoute";
+
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/pets" element={<PetPage />} />
-        <Route path="/owners" element={<OwnerPage />} />
-        <Route path="/appointments" element={<AppointmentPage />} />
-        <Route path="/admin-invoice" element={<AdminInvoice />} />
-        <Route path="/admin-prescription" element={<AdminPrescription />} />
-        <Route path="/vet-dashboard" element={<VetDashboard />} />
-        <Route path="/vetprofile" element={<Vetprofile />} />
         <Route path="/vet-login" element={<Vetlogin />} />
         <Route path="/owner-login" element={<OwnerLogin />} />
 
-        {/* Protect History */}
+        {/* General public pages (adjust as needed) */}
+        <Route path="/pets" element={<PetPage />} />
+        <Route path="/owners" element={<OwnerPage />} />
+        <Route path="/appointments" element={<AppointmentPage />} />
+
+        {/* ---------- Protected (any authenticated user) ---------- */}
         <Route
           path="/history"
           element={
@@ -44,8 +46,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Protect Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -54,13 +54,68 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Protect Profile */}
         <Route
           path="/profile"
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ---------- Role-based protection ---------- */}
+        {/* Admin-only pages */}
+        <Route
+          path="/admin-invoice"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allow={['admin']}>
+                <AdminInvoice />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin-prescription"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allow={['admin']}>
+                <AdminPrescription />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Vet-only pages */}
+        <Route
+          path="/vet-dashboard"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allow={['vet']}>
+                <VetDashboard />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vetprofile"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allow={['vet']}>
+                <Vetprofile />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Owner-only example */}
+        <Route
+          path="/my-pets"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allow={['owner']}>
+                <PetPage />
+              </RoleRoute>
             </ProtectedRoute>
           }
         />

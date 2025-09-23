@@ -11,16 +11,26 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  // Menu button style (yellow background + black text)
+  // Keep button look & feel exactly the same
   const btnClass =
     'px-4 py-2 rounded-full font-bold hover:opacity-90 transition';
   const btnStyle = { backgroundColor: '#F3F58B', color: '#000' };
 
+  // NEW: only change the bar color by role (menus remain unchanged)
+  const ROLE_COLORS = {
+    admin: '#A5A1FB', // Admin
+    owner: '#FBD4A1', // Pet Owner
+    vet:   '#D18AC5', // Vet
+    guest: '#2563EB', // Tailwind blue-600 as fallback for guests
+  };
+  const role = user?.role || 'guest';
+  const barColor = ROLE_COLORS[role] || ROLE_COLORS.guest;
+
   return (
-    // Set the entire navbar font to Cherry Bomb One
+    // Keep existing layout & font, but override background color dynamically
     <nav
       className="bg-blue-600 text-black p-4 flex justify-between items-center"
-      style={{ fontFamily: "'Cherry Bomb One', cursive" }}
+      style={{ fontFamily: "'Cherry Bomb One', cursive", backgroundColor: barColor }}
     >
       <Link
         to="/Dashboard"
@@ -37,7 +47,7 @@ const Navbar = () => {
             <Link to="/vet-login" className={btnClass} style={btnStyle}>
               Vet Login
             </Link>
-            {/* Owner login → /owner-login (changed here) */}
+            {/* Owner login → /owner-login */}
             <Link to="/owner-login" className={btnClass} style={btnStyle}>
               Owner Login
             </Link>
