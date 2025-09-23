@@ -33,11 +33,12 @@ const Navbar = () => {
       <div className="flex items-center space-x-3">
         {!user && (
           <>
-            {/* both buttons now navigate to Vet login page */}
+            {/* Vet login → /vet-login */}
             <Link to="/vet-login" className={btnClass} style={btnStyle}>
               Vet Login
             </Link>
-            <Link to="/vet-login" className={btnClass} style={btnStyle}>
+            {/* Owner login → /owner-login (changed here) */}
+            <Link to="/owner-login" className={btnClass} style={btnStyle}>
               Owner Login
             </Link>
           </>
@@ -67,7 +68,7 @@ const Navbar = () => {
               Add Pet
             </Link>
             <Link to="/profile" className={btnClass} style={btnStyle}>
-              Admin Profile
+              Profile
             </Link>
             <button onClick={handleLogout} className={btnClass} style={btnStyle}>
               Logout

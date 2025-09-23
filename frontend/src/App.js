@@ -15,6 +15,7 @@ import AdminPrescription from "./pages/AdminPrescription";
 import VetDashboard from './pages/VetDashboard';
 import Vetprofile from './pages/Vetprofile.jsx';
 import Vetlogin from "./pages/Vetlogin";
+import OwnerLogin from "./pages/OwnerLogin";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/vet-dashboard" element={<VetDashboard />} />
         <Route path="/vetprofile" element={<Vetprofile />} />
         <Route path="/vet-login" element={<Vetlogin />} />
+        <Route path="/owner-login" element={<OwnerLogin />} />
 
         {/* Protect History */}
         <Route

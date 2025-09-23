@@ -1,25 +1,15 @@
-// frontend/src/pages/Login.jsx
+// frontend/src/pages/OwnerLogin.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { setToken } from "../utils/auth";
 import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
+export default function OwnerLogin() {
   const nav = useNavigate();
   const { login } = useAuth();
 
-  // ---- Admin code (use env first, fallback to default) ----
-  const ADMIN_CODE =
-    process.env.REACT_APP_ADMIN_CODE && process.env.REACT_APP_ADMIN_CODE.trim()
-      ? process.env.REACT_APP_ADMIN_CODE.trim()
-      : "ADMIN-2025";
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    adminCode: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -28,20 +18,9 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
-
-    // 1) Client-side check for Admin code
-    if (!form.adminCode) {
-      setErrorMsg("Please enter Admin code.");
-      return;
-    }
-    if (form.adminCode.trim() !== ADMIN_CODE) {
-      setErrorMsg("Invalid Admin code.");
-      return;
-    }
-
     setLoading(true);
     try {
-      // 2) Proceed to normal login
+
       const res = await api.post("/auth/login", {
         email: form.email,
         password: form.password,
@@ -50,15 +29,14 @@ export default function Login() {
       if (res.data?.token) {
         setToken(res.data.token);
 
-        // prefer /auth/me; fall back to /auth/profile if your backend differs
         let me;
         try {
           me = await api.get("/auth/me");
         } catch {
           me = await api.get("/auth/profile");
         }
-        // Force role to admin in client if your /me doesn’t return it consistently
-        const userPayload = { ...me.data, role: me.data?.role || "admin" };
+
+        const userPayload = { ...me.data, role: me.data?.role || "owner" };
         login(userPayload);
 
         nav("/dashboard");
@@ -82,7 +60,7 @@ export default function Login() {
         fontFamily: "Tuffy, sans-serif",
       }}
     >
-      {/* 🐾 Background Pets (unchanged) */}
+      {/* 🐾 Background Pets */}
       <img
         src="/Pet1.png"
         alt="Pet1"
@@ -113,13 +91,13 @@ export default function Login() {
         }}
       />
 
-      {/* Login Card */}
+      {/* Card */}
       <div
         className="rounded-2xl shadow-lg p-10 relative z-10"
         style={{
           backgroundColor: "#9DB4E5",
           width: "560px",
-          height: "520px", // +60px to fit Admin code field
+          height: "480px",
         }}
       >
         <h1
@@ -130,7 +108,7 @@ export default function Login() {
             fontWeight: "bold",
           }}
         >
-          Admin login
+          Owner login
         </h1>
 
         {errorMsg && (
@@ -174,21 +152,6 @@ export default function Login() {
             />
           </div>
 
-          {/* NEW: Admin code (like Vet code) */}
-          <div>
-            <label>Admin code</label>
-            <input
-              className="w-full rounded-lg px-3 py-2 border"
-              type="text"
-              value={form.adminCode}
-              onChange={onChange("adminCode")}
-              placeholder="Enter admin code"
-              required
-              disabled={loading}
-              autoComplete="one-time-code"
-            />
-          </div>
-
           <button
             type="submit"
             className="rounded-full px-6 py-2 mt-2"
@@ -199,12 +162,11 @@ export default function Login() {
             }}
             disabled={loading}
           >
-            {loading ? "Signing in..." : "Login 🐶"}
+            {loading ? "Signing in..." : "Login 🐾"}
           </button>
         </form>
       </div>
 
-      {/* Note */}
       <p className="mt-4 text-sm relative z-10">
         Use your registered email and password.
       </p>
