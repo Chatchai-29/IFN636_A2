@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema({
     ],
 
     message: { type: String }, // summary that is readable by a person
-    read: { type: Booleam, default: false }
+    read: { type: Boolean, default: false }
 }, { timestamps: true });
 
-moudule.exports = mongoose.model('Notification', notificationSchema);
+module.exports = mongoose.model('Notification', notificationSchema);
