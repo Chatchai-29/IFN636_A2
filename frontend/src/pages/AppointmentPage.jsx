@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 
 const API_APPTS  = 'http://localhost:5001/appointments';
 const API_OWNERS = 'http://localhost:5001/owners';
 const API_PETS   = 'http://localhost:5001/pets';
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5001'; // same host and port as API
 
 export default function AppointmentPage() {
   const [appointments, setAppointments] = useState([]);
   const [owners, setOwners] = useState([]);
   const [pets, setPets] = useState([]);
-
+  const socketRef = useRef(null); //Socket.IO listener that triggers an alert and refresh:
   // API value keeps ISO (yyyy-mm-dd). UI shows dd/mm/yyyy via displayDate.
   const [formData, setFormData] = useState({ ownerId:'', petId:'', date:'', time:'', reason:'' });
   const [displayDate, setDisplayDate] = useState(''); // dd/mm/yyyy
@@ -34,6 +36,27 @@ export default function AppointmentPage() {
       alert('Error fetching data');
     }
   };
+
+  // --- LIVE NOTIFICATIONS: listen for 'notification' events and show an alert ---
+  useEffect(() => {
+  // connect once
+    socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
+
+    const onNotification = (notification) => {
+      // if (formData.ownerId && notification.ownerId !== String(formData.ownerId)) return;
+      const msg = notification?.message || 'Appointment updated';
+      alert(`${msg}`);
+      // optional: refresh the appointments table to reflect changes
+      refetchAppointments().catch(() => {});
+    };
+
+    socketRef.current.on('notification', onNotification);
+
+    return () => {
+      socketRef.current?.off('notification', onNotification);
+      socketRef.current?.disconnect();
+    };
+  }, []); // mount once
 
   // ---------- date helpers (display <-> ISO) ----------
   const isoToDmy = (iso) => {

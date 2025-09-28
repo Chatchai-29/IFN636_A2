@@ -3,12 +3,14 @@
 require('dotenv').config();
 require('./models/AppointmentModel'); // ensure the notification schema and associated hooks are registered
 require('./models/NotificationModel'); // ensure the notification model exists
-const bus = require('./events/bus'); // ensure the bus singleton exists and is connected
-require('./listeners/notificationListener')(bus);
+const bus = require('./events/bus'); // event bus
+
 
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const http = require ('http');
+const { Server } = require('socket.io');
 
 const connectDB = require('./config/db');
 
@@ -95,17 +97,39 @@ app.get('/health', (_req, res) => {
 // ================== Start server ==================
 async function start() {
   try {
-    // 🟢 CONNECT DB 
+    // CONNECT DB 
     if (NODE_ENV !== 'test') {
       await connectDB();
       console.log('[db] MongoDB connected');
     }
-
-    // bind 0.0.0.0 
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`[http] Listening on 0.0.0.0:${PORT} (${NODE_ENV})`);
+// ----- Create HTTP server and attach Socket.IO -----
+    const server = http.createServer(app);
+    const io = new Server(server, {
+      cors: {
+        origin: (origin, cb) => {
+          if (!origin) return cb(null, true);
+          if (NODE_ENV !== 'production') return cb(null, true);
+          // reuse your allow-list in production
+         return cb(ALLOW_LIST.has(origin) ? null : new Error('Not allowed by CORS: ' + origin), true);
+        },
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        credentials: false,
+      },
     });
 
+    io.on('connection', (socket) => {
+      console.log('socket connected:', socket.id);
+      socket.on('disconnect', () => console.log('socket disconnected:', socket.id));
+    });
+
+    // Register the notification listener **after** io exists
+    require('./listeners/notificationListener')(bus, io);
+
+    // Start server (bind 0.0.0.0)
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`[http] Listening on 0.0.0.0:${PORT} (${NODE_ENV})`);
+    });
+    
     // Graceful shutdown
     process.on('SIGINT', () => {
       console.log('\nSIGINT received. Closing gracefully...');
@@ -127,7 +151,7 @@ async function start() {
   }
 }
 
-// 🟢 RUN SERVER Only when not test
+// RUN SERVER Only when not test
 if (NODE_ENV !== 'test') {
   start();
 }

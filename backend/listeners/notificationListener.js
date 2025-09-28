@@ -41,12 +41,36 @@ async function createNotification(payload) {
         changes,
         message
     });
+    
+
 }
 
-module.exports = function registerNotificationListener(bus) {
-    bus.on('appointment.updated', (payload) => {
-        createNotification(payload).catch(err => {
-            console.error('notificationListener failed to create notification:', err);
-        });
-    });
+module.exports = function registerNotificationListener(bus, io) {
+  bus.on('appointment.updated', async (payload) => {
+    try {
+      const appt = await payload.doc.populate([
+        { path: 'ownerId', select: 'name' },
+        { path: 'petId',   select: 'name' },
+      ]);
+
+      const notification = await Notification.create({
+        type: 'appointment.updated',
+        appointmentId: appt._id,
+        ownerId: appt.ownerId?._id || appt.ownerId,
+        petId: appt.petId?._id || appt.petId,
+        changes: payload.changes,
+        message: `Appointment updated for ${appt.ownerId?.name || 'Owner'}`
+      });
+
+      // Emit Notification
+      io.emit('notification', {
+        _id: notification._id,
+        ownerId: notification.ownerId?.toString?.(),
+        message: notification.message,
+        createdAt: notification.createdAt,
+      });
+    } catch (err) {
+      console.error('[notificationListener] failed:', err);
+    }
+  });
 };
