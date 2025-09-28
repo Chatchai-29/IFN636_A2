@@ -1,6 +1,10 @@
 // backend/server.js
 // ================== Load env & core deps ==================
 require('dotenv').config();
+require('./models/AppointmentModel'); // ensure the notification schema and associated hooks are registered
+require('./models/NotificationModel'); // ensure the notification model exists
+const bus = require('./events/bus'); // ensure the bus singleton exists and is connected
+require('./listeners/notificationListener')(bus);
 
 const express = require('express');
 const cors = require('cors');
