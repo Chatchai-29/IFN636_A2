@@ -1,7 +1,13 @@
+// backend/models/AppointmentModel.js
 const mongoose = require('mongoose');
 const bus = require('../events/bus');
 
 const appointmentSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   petId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Pet',
@@ -36,18 +42,15 @@ appointmentSchema.index(
   { unique: true, partialFilterExpression: { status: 'scheduled' } }
 );
 
-/* Hooks for observer */
-// capture modified fields for document.save()
 appointmentSchema.pre('save', function(next){
   if (!this.isNew) {
-    // store the list of modified fields
     this.$locals.modified = this.modifiedPaths();
   }
   next();
 });
 
 appointmentSchema.post('save', async function(doc){
-  if (this.isNew) return; // only on update
+  if (this.isNew) return;
   const modified = this.$locals.modified || [];
 
   const changes = modified.map((field) => {
@@ -61,11 +64,9 @@ appointmentSchema.post('save', async function(doc){
   });
 });
 
-// for findOneAndUpdate
 appointmentSchema.pre('findOneAndUpdate', function(next) {
   const update = this.getUpdate() || {};
   const $set = update.$set || update;
-  //records the fields that are changing
   this._modifiedFields = Object.keys($set);
   next();
 });
@@ -74,8 +75,6 @@ appointmentSchema.post('findOneAndUpdate', async function(doc) {
   if (!doc) return;
   const modified = this._modifiedFields || [];
 
-  // Build changes with "to" values from doc and "from" from prior doc
-  
   const changes = modified.map(field => ({ field }));
 
   bus.emit('appointment.updated', {

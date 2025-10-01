@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import api from "../services/axios";
 import { setToken } from "../utils/auth";
 import { useAuth } from "../context/AuthContext";
 
@@ -39,7 +39,7 @@ export default function OwnerLogin() {
         login(user);
 
         // owners มักไปหน้า owner-specific เช่น owner appointments
-        nav("/owner-appointments");
+        nav("/appointments");
       } else {
         setErrorMsg("Login response missing token");
       }

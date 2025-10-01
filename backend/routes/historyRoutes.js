@@ -1,34 +1,21 @@
+// backend/routes/historyRoutes.js
 const express = require('express');
 const router = express.Router();
-
-// IMPORTANT: match the actual file name and case exactly
 const Appointment = require('../models/AppointmentModel');
+const { protect } = require('../middleware/authMiddleware');
 
-/**
- * GET /history
- * Query params:
- *  - q: text query (owner name / owner phone / pet name)
- *  - from, to: ISO date string 'YYYY-MM-DD'
- *  - status: 'scheduled' | 'completed' | 'cancelled'
- *  - page, limit: pagination
- *
- * Notes:
- *  - We filter date/status in DB, then populate owner/pet and do text filter in-memory.
- *  - This matches the current schema where Appointment stores ownerId/petId refs
- *    and date as 'YYYY-MM-DD' string.
- */
+router.use(protect);
+
 router.get('/', async (req, res) => {
   try {
-    const {
-      q = '',
-      from = '',
-      to = '',
-      status = '',
-      page = '1',
-      limit = '20',
-    } = req.query;
+    const { q = '', from = '', to = '', status = '', page = '1', limit = '20' } = req.query;
 
     const match = {};
+    
+    if (req.user.role === 'owner') {
+      match.userId = req.user._id;
+    }
+    
     if (from || to) {
       match.date = {};
       if (from) match.date.$gte = from;
@@ -42,14 +29,12 @@ router.get('/', async (req, res) => {
     const limNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
     const skip = (pageNum - 1) * limNum;
 
-    // fetch candidates by date/status, newest first
     const base = await Appointment.find(match)
       .sort({ date: -1, time: -1 })
       .populate('ownerId', 'name phone')
       .populate('petId', 'name type')
       .lean();
 
-    // text filter over populated fields
     const needle = (q || '').trim().toLowerCase();
     const filtered = needle
       ? base.filter(appt => {
