@@ -1,9 +1,10 @@
+// backend/routes/appointmentRoutes.js
 const express = require('express');
 const router = express.Router();
 const Appointment = require('../models/AppointmentModel');
 const { protect } = require('../middleware/authMiddleware');
 
-// Helper: check conflict
+// Helper function to check appointment conflicts
 async function findConflict({ petId, date, time, excludeId }) {
   const query = { petId, date, time, status: 'scheduled' };
   if (excludeId) query._id = { $ne: excludeId };
@@ -12,28 +13,23 @@ async function findConflict({ petId, date, time, excludeId }) {
 
 /**
  * GET /appointments
- * Filter by role: owner sees only their appointments
+ * Get all appointments with optional filters
  */
 router.get('/', protect, async (req, res) => {
   try {
     const { ownerId, petId, status, date } = req.query;
     const filter = {};
     
-    // If user is owner, only show their appointments
-    if (req.user.role === 'owner') {
-      filter.ownerId = req.user._id;
-    } else {
-      // Admin/vet can filter by ownerId if provided
-      if (ownerId) filter.ownerId = ownerId;
-    }
-    
+    // Apply filters if provided
+    if (ownerId) filter.ownerId = ownerId;
     if (petId) filter.petId = petId;
     if (status) filter.status = status;
     if (date) filter.date = date;
 
+    // Get appointments and populate owner and pet info
     const items = await Appointment.find(filter)
       .sort({ date: 1, time: 1 })
-      .populate('ownerId', 'name phone')
+      .populate('ownerId', 'name phone')  // Get owner name from Owner model
       .populate('petId', 'name type');
 
     res.json(items);
@@ -44,12 +40,13 @@ router.get('/', protect, async (req, res) => {
 
 /**
  * GET /appointments/summary
- * Filter by owner role
+ * Get summary of appointments by date
  */
 router.get('/summary', protect, async (req, res) => {
   try {
     let { from, to } = req.query;
 
+    // Default to next 7 days if no dates provided
     if (!from || !to) {
       const today = new Date();
       const toDate = new Date();
@@ -59,12 +56,8 @@ router.get('/summary', protect, async (req, res) => {
     }
 
     const filter = { date: { $gte: from, $lte: to } };
-    
-    // Owner sees only their data
-    if (req.user.role === 'owner') {
-      filter.ownerId = req.user._id;
-    }
 
+    // Aggregate appointments by date and status
     const summary = await Appointment.aggregate([
       { $match: filter },
       {
@@ -75,6 +68,7 @@ router.get('/summary', protect, async (req, res) => {
       }
     ]);
 
+    // Format summary data
     const map = {};
     summary.forEach(item => {
       const date = item._id.date;
@@ -85,6 +79,7 @@ router.get('/summary', protect, async (req, res) => {
       map[date][item._id.status] = item.count;
     });
 
+    // Create array for all dates in range
     const result = [];
     const start = new Date(from);
     const end = new Date(to);
@@ -101,7 +96,7 @@ router.get('/summary', protect, async (req, res) => {
 
 /**
  * GET /appointments/:id
- * Check ownership for owner role
+ * Get single appointment by ID
  */
 router.get('/:id', protect, async (req, res) => {
   try {
@@ -111,11 +106,6 @@ router.get('/:id', protect, async (req, res) => {
     
     if (!item) return res.status(404).json({ message: 'Appointment not found' });
     
-    // Owner can only see their own
-    if (req.user.role === 'owner' && String(item.ownerId._id) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-    
     res.json(item);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -124,30 +114,36 @@ router.get('/:id', protect, async (req, res) => {
 
 /**
  * POST /appointments
- * Owner can only create for themselves
+ * Create new appointment - use ownerId from form
  */
 router.post('/', protect, async (req, res) => {
   try {
-    let { petId, ownerId, date, time, reason } = req.body;
+    const { petId, ownerId, date, time, reason } = req.body;
     
-    // Force ownerId for owner role
-    if (req.user.role === 'owner') {
-      ownerId = req.user._id;
-    }
-    
+    // Validate required fields
     if (!petId || !ownerId || !date || !time) {
       return res.status(400).json({ message: 'petId, ownerId, date, time are required' });
     }
 
+    // Check for appointment conflicts
     const conflict = await findConflict({ petId, date, time });
     if (conflict) {
       return res.status(409).json({ message: 'Double booking detected' });
     }
 
+    // Create new appointment
     const appt = new Appointment({ petId, ownerId, date, time, reason });
     const saved = await appt.save();
+    
+    // Populate owner and pet info before sending response
+    await saved.populate([
+      { path: 'ownerId', select: 'name phone' },
+      { path: 'petId', select: 'name type' }
+    ]);
+    
     res.status(201).json(saved);
   } catch (err) {
+    // Handle duplicate appointment error
     if (err && err.code === 11000) {
       return res.status(409).json({ message: 'Double booking detected' });
     }
@@ -157,23 +153,20 @@ router.post('/', protect, async (req, res) => {
 
 /**
  * PATCH /appointments/:id
- * Owner can only update their own
+ * Update existing appointment
  */
 router.patch('/:id', protect, async (req, res) => {
   try {
     const current = await Appointment.findById(req.params.id);
     if (!current) return res.status(404).json({ message: 'Appointment not found' });
 
-    // Check ownership for owner role
-    if (req.user.role === 'owner' && String(current.ownerId) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
+    // Get values from request or keep current values
     const nextPetId = req.body.petId ?? String(current.petId);
     const nextDate = req.body.date ?? current.date;
     const nextTime = req.body.time ?? current.time;
     const nextStatus = req.body.status ?? current.status;
 
+    // Check for conflicts if status is scheduled
     if (nextStatus === 'scheduled') {
       const conflict = await findConflict({
         petId: nextPetId,
@@ -186,8 +179,16 @@ router.patch('/:id', protect, async (req, res) => {
       }
     }
 
+    // Update appointment fields
     Object.assign(current, req.body);
     const saved = await current.save();
+    
+    // Populate before sending response
+    await saved.populate([
+      { path: 'ownerId', select: 'name phone' },
+      { path: 'petId', select: 'name type' }
+    ]);
+    
     res.json(saved);
   } catch (err) {
     if (err && err.code === 11000) {
@@ -197,16 +198,16 @@ router.patch('/:id', protect, async (req, res) => {
   }
 });
 
-// Other routes (cancel, complete, delete) - add similar ownership checks
+/**
+ * PATCH /appointments/:id/cancel
+ * Cancel an appointment
+ */
 router.patch('/:id/cancel', protect, async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
-    
-    if (req.user.role === 'owner' && String(appt.ownerId) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
 
+    // Update status to cancelled
     const updated = await Appointment.findByIdAndUpdate(
       req.params.id,
       { status: 'cancelled' },
@@ -220,22 +221,25 @@ router.patch('/:id/cancel', protect, async (req, res) => {
   }
 });
 
+/**
+ * PATCH /appointments/:id/complete
+ * Mark appointment as completed
+ */
 router.patch('/:id/complete', protect, async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
 
-    // Only admin/vet can complete
-    if (req.user.role === 'owner') {
-      return res.status(403).json({ message: 'Only staff can complete appointments' });
-    }
-
+    // Cannot complete a cancelled appointment
     if (appt.status === 'cancelled') {
       return res.status(400).json({ message: 'Cannot complete a cancelled appointment' });
     }
 
+    // Update status to completed
     appt.status = 'completed';
     await appt.save();
+    
+    // Populate before sending response
     await appt.populate([
       { path: 'ownerId', select: 'name phone' },
       { path: 'petId', select: 'name type' },
@@ -247,14 +251,14 @@ router.patch('/:id/complete', protect, async (req, res) => {
   }
 });
 
+/**
+ * DELETE /appointments/:id
+ * Delete an appointment
+ */
 router.delete('/:id', protect, async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
-    
-    if (req.user.role === 'owner' && String(appt.ownerId) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
 
     await Appointment.findByIdAndDelete(req.params.id);
     res.json({ message: 'Appointment deleted' });
@@ -263,14 +267,14 @@ router.delete('/:id', protect, async (req, res) => {
   }
 });
 
+/**
+ * PUT /appointments/:id
+ * Full update of appointment
+ */
 router.put('/:id', protect, async (req, res) => {
   try {
     const current = await Appointment.findById(req.params.id);
     if (!current) return res.status(404).json({ message: 'Appointment not found' });
-
-    if (req.user.role === 'owner' && String(current.ownerId) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
 
     const body = req.body || {};
     const petId = body.petId || String(current.petId);
@@ -278,6 +282,7 @@ router.put('/:id', protect, async (req, res) => {
     const time = body.time || current.time;
     const status = body.status || current.status;
 
+    // Check for conflicts if status is scheduled
     if (status === 'scheduled') {
       const conflict = await findConflict({
         petId, date, time, excludeId: req.params.id
@@ -287,7 +292,14 @@ router.put('/:id', protect, async (req, res) => {
       }
     }
 
-    const updated = await Appointment.findByIdAndUpdate(req.params.id, body, { new: true });
+    // Update appointment
+    const updated = await Appointment.findByIdAndUpdate(
+      req.params.id, 
+      body, 
+      { new: true }
+    ).populate('ownerId', 'name phone')
+     .populate('petId', 'name type');
+     
     res.json(updated);
   } catch (err) {
     if (err && err.code === 11000) {

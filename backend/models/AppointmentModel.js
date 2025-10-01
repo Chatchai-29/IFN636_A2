@@ -1,3 +1,4 @@
+// backend/models/AppointmentModel.js
 const mongoose = require('mongoose');
 const bus = require('../events/bus');
 
@@ -9,7 +10,7 @@ const appointmentSchema = new mongoose.Schema({
   },
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Owner',
+    ref: 'Owner',  // This must reference Owner model, not User
     required: true
   },
   date: {
@@ -31,23 +32,23 @@ const appointmentSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Prevent duplicate appointments for same pet at same time
 appointmentSchema.index(
   { petId: 1, date: 1, time: 1 },
   { unique: true, partialFilterExpression: { status: 'scheduled' } }
 );
 
-/* Hooks for observer */
-// capture modified fields for document.save()
+// Hook to track changes before saving
 appointmentSchema.pre('save', function(next){
   if (!this.isNew) {
-    // store the list of modified fields
     this.$locals.modified = this.modifiedPaths();
   }
   next();
 });
 
+// Hook to emit event after saving
 appointmentSchema.post('save', async function(doc){
-  if (this.isNew) return; // only on update
+  if (this.isNew) return;
   const modified = this.$locals.modified || [];
 
   const changes = modified.map((field) => {
@@ -61,11 +62,10 @@ appointmentSchema.post('save', async function(doc){
   });
 });
 
-// for findOneAndUpdate
+// Hook for findOneAndUpdate
 appointmentSchema.pre('findOneAndUpdate', function(next) {
   const update = this.getUpdate() || {};
   const $set = update.$set || update;
-  //records the fields that are changing
   this._modifiedFields = Object.keys($set);
   next();
 });
@@ -73,9 +73,6 @@ appointmentSchema.pre('findOneAndUpdate', function(next) {
 appointmentSchema.post('findOneAndUpdate', async function(doc) {
   if (!doc) return;
   const modified = this._modifiedFields || [];
-
-  // Build changes with "to" values from doc and "from" from prior doc
-  
   const changes = modified.map(field => ({ field }));
 
   bus.emit('appointment.updated', {
