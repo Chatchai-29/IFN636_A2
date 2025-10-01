@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
-import api from '../api/axios'; // Use api instead of axios
+import api from '../api/axios';
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5001';
 
@@ -21,18 +21,37 @@ export default function AppointmentPage() {
   
   const fetchAll = async () => {
     try {
-      // Use api (with token) instead of axios
+      // ⚠️ Add timestamp to bypass cache
+      const timestamp = Date.now();
       const [o, p, a] = await Promise.all([
-        api.get('/owners'),
-        api.get('/pets'),
-        api.get('/appointments'),
+        api.get(`/owners?_t=${timestamp}`),
+        api.get(`/pets?_t=${timestamp}`),
+        api.get(`/appointments?_t=${timestamp}`),
       ]);
+      
+      console.log('[fetchAll] Fetched data:', {
+        owners: o.data?.length || 0,
+        pets: p.data?.length || 0,
+        appointments: a.data?.length || 0
+      });
+      
       setOwners(o.data || []);
       setPets(p.data || []);
       setAppointments(a.data || []);
     } catch (e) {
-      console.error(e);
+      console.error('[fetchAll] Error:', e);
       alert('Error fetching data: ' + (e.response?.data?.message || e.message));
+    }
+  };
+
+  const refetchAppointments = async () => {
+    try {
+      const timestamp = Date.now();
+      const a = await api.get(`/appointments?_t=${timestamp}`);
+      console.log('[refetchAppointments] Got:', a.data?.length || 0, 'appointments');
+      setAppointments(a.data || []);
+    } catch (e) {
+      console.error('[refetchAppointments] Error:', e);
     }
   };
 
@@ -127,14 +146,9 @@ export default function AppointmentPage() {
       clearForm();
       await refetchAppointments();
     } catch (err) {
-      console.error(err);
+      console.error('[handleSubmit] Error:', err);
       alert(err.response?.data?.message || 'Save failed');
     }
-  };
-
-  const refetchAppointments = async () => {
-    const a = await api.get('/appointments');
-    setAppointments(a.data || []);
   };
 
   const handleEdit = (appt) => {
@@ -243,6 +257,13 @@ export default function AppointmentPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
             <p className="text-slate-600">Book, edit, cancel appointments.</p>
+          </div>
+
+          {/* Debug info */}
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <p className="text-sm text-blue-800">
+              📊 Data loaded: {owners.length} owners, {pets.length} pets, {appointments.length} appointments
+            </p>
           </div>
 
           {errors.length > 0 && (

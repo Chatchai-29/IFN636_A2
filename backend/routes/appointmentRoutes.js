@@ -13,15 +13,32 @@ async function findConflict({ petId, date, time, excludeId }) {
 
 /**
  * GET /appointments
+<<<<<<< HEAD
  * Get all appointments with optional filters
+=======
+ * Filter by role: owner sees only their appointments, admin/vet see all
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.get('/', protect, async (req, res) => {
   try {
     const { ownerId, petId, status, date } = req.query;
     const filter = {};
     
+<<<<<<< HEAD
     // Apply filters if provided
     if (ownerId) filter.ownerId = ownerId;
+=======
+    // Owner sees ONLY their appointments
+    if (req.user.role === 'owner') {
+      filter.ownerId = req.user._id;
+    }
+    // Admin/vet see ALL appointments (unless they filter by ownerId explicitly)
+    else {
+      if (ownerId) filter.ownerId = ownerId;
+      // Don't add any ownerId filter if not provided - show all
+    }
+    
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
     if (petId) filter.petId = petId;
     if (status) filter.status = status;
     if (date) filter.date = date;
@@ -40,7 +57,11 @@ router.get('/', protect, async (req, res) => {
 
 /**
  * GET /appointments/summary
+<<<<<<< HEAD
  * Get summary of appointments by date
+=======
+ * Owner sees only their data, admin/vet see all
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.get('/summary', protect, async (req, res) => {
   try {
@@ -56,6 +77,15 @@ router.get('/summary', protect, async (req, res) => {
     }
 
     const filter = { date: { $gte: from, $lte: to } };
+<<<<<<< HEAD
+=======
+    
+    // Owner sees only their data
+    if (req.user.role === 'owner') {
+      filter.ownerId = req.user._id;
+    }
+    // Admin/vet see ALL data (no additional filter)
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
 
     // Aggregate appointments by date and status
     const summary = await Appointment.aggregate([
@@ -96,7 +126,11 @@ router.get('/summary', protect, async (req, res) => {
 
 /**
  * GET /appointments/:id
+<<<<<<< HEAD
  * Get single appointment by ID
+=======
+ * Owner can only see their own, admin/vet see all
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.get('/:id', protect, async (req, res) => {
   try {
@@ -160,7 +194,15 @@ router.patch('/:id', protect, async (req, res) => {
     const current = await Appointment.findById(req.params.id);
     if (!current) return res.status(404).json({ message: 'Appointment not found' });
 
+<<<<<<< HEAD
     // Get values from request or keep current values
+=======
+    // Owner can only update their own
+    if (req.user.role === 'owner' && String(current.ownerId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
     const nextPetId = req.body.petId ?? String(current.petId);
     const nextDate = req.body.date ?? current.date;
     const nextTime = req.body.time ?? current.time;
@@ -200,7 +242,11 @@ router.patch('/:id', protect, async (req, res) => {
 
 /**
  * PATCH /appointments/:id/cancel
+<<<<<<< HEAD
  * Cancel an appointment
+=======
+ * Owner can only cancel their own
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.patch('/:id/cancel', protect, async (req, res) => {
   try {
@@ -223,7 +269,11 @@ router.patch('/:id/cancel', protect, async (req, res) => {
 
 /**
  * PATCH /appointments/:id/complete
+<<<<<<< HEAD
  * Mark appointment as completed
+=======
+ * Only admin/vet can complete
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.patch('/:id/complete', protect, async (req, res) => {
   try {
@@ -253,7 +303,11 @@ router.patch('/:id/complete', protect, async (req, res) => {
 
 /**
  * DELETE /appointments/:id
+<<<<<<< HEAD
  * Delete an appointment
+=======
+ * Owner can only delete their own
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.delete('/:id', protect, async (req, res) => {
   try {
@@ -268,8 +322,13 @@ router.delete('/:id', protect, async (req, res) => {
 });
 
 /**
+<<<<<<< HEAD
  * PUT /appointments/:id
  * Full update of appointment
+=======
+ * PUT /appointments/:id (full update)
+ * Owner can only update their own
+>>>>>>> 69a8cec967bfc656423bee4fd4138080fdb6d05d
  */
 router.put('/:id', protect, async (req, res) => {
   try {

@@ -5,7 +5,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 /**
  * GET /history
- * Owner sees only their appointments
+ * Owner sees only their appointments, admin/vet see all
  */
 router.get('/', protect, async (req, res) => {
   try {
@@ -24,6 +24,7 @@ router.get('/', protect, async (req, res) => {
     if (req.user.role === 'owner') {
       match.ownerId = req.user._id;
     }
+    // Admin/vet: no filter - see all appointments
     
     if (from || to) {
       match.date = {};
