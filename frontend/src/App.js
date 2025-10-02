@@ -19,6 +19,7 @@ import AdminInvoice from './pages/AdminInvoice';
 import AdminPrescription from "./pages/AdminPrescription";
 import VetDashboard from './pages/VetDashboard';
 import Vetprofile from './pages/Vetprofile.jsx';
+import Vaccination from "./pages/Vaccination";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route path="/admin-prescription" element={<AdminPrescription />} />
         <Route path="/vet-dashboard" element={<VetDashboard />} />
         <Route path="/vetprofile" element={<Vetprofile />} />
+        <Route path="/vaccination" element={<Vaccination />} />
 
         <Route
           path="/history"

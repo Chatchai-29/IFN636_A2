@@ -53,6 +53,9 @@ const Navbar = () => {
             <Link to="/admin-prescription" className={btnClass} style={btnStyle}>
               Admin Prescription
             </Link>
+            <Link to="/vaccination" className={btnClass} style={btnStyle}>
+              Vaccination
+            </Link>
             <Link to="/appointments" className={btnClass} style={btnStyle}>
               Appointment
             </Link>
