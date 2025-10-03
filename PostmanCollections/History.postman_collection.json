@@ -1,0 +1,195 @@
+{
+	"info": {
+		"_postman_id": "a073dfb7-2dcd-404e-b1dd-82c58ebba88b",
+		"name": "History",
+		"description": "GET /history (owner sees own, admin/vet see all). Uses Bearer {{token}} and {{base_url}} variables.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48987575",
+		"_collection_link": "https://alek-karoli-2862410.postman.co/workspace/Alek-Karoli's-Workspace~ae93230a-a489-4b81-85c4-95faa74dc4c0/collection/48987575-a073dfb7-2dcd-404e-b1dd-82c58ebba88b?action=share&source=collection_link&creator=48987575"
+	},
+	"item": [
+		{
+			"name": "History - Basic (GET /history)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Items returned\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"items\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/history",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"history"
+					]
+				},
+				"description": "Returns history items. If the user role is 'owner', only their appointments are returned; admin/vet see all."
+			},
+			"response": []
+		},
+		{
+			"name": "History - With Filters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Correct history returned\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"0491714860\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/history?q=Alek&from=2025-09-04&to=2025-10-03&status=scheduled&page={{page}}&limit={{limit}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"history"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "Alek",
+							"description": "Matches owner name/phone or pet name (case-insensitive)."
+						},
+						{
+							"key": "from",
+							"value": "2025-09-04",
+							"description": "ISO date yyyy-mm-dd (inclusive lower bound)."
+						},
+						{
+							"key": "to",
+							"value": "2025-10-03",
+							"description": "ISO date yyyy-mm-dd (inclusive upper bound)."
+						},
+						{
+							"key": "status",
+							"value": "scheduled",
+							"description": "scheduled | completed | cancelled"
+						},
+						{
+							"key": "page",
+							"value": "{{page}}",
+							"description": "1-based page number."
+						},
+						{
+							"key": "limit",
+							"value": "{{limit}}",
+							"description": "Items per page (1-100)."
+						}
+					]
+				},
+				"description": "Server filters by date range & status, sorts by date/time desc, then applies text filter (q) on owner/pet fields and paginates."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5001"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "q",
+			"value": ""
+		},
+		{
+			"key": "from",
+			"value": ""
+		},
+		{
+			"key": "to",
+			"value": ""
+		},
+		{
+			"key": "status",
+			"value": ""
+		},
+		{
+			"key": "page",
+			"value": "1"
+		},
+		{
+			"key": "limit",
+			"value": "20"
+		}
+	]
+}

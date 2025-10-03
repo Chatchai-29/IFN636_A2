@@ -1,0 +1,221 @@
+{
+	"info": {
+		"_postman_id": "5a563ca4-2d9f-49a0-84be-dc16c5cc3bed",
+		"name": "Auth",
+		"description": "Authentication routes: register, login, get/update profile, get me. Uses {{base_url}} and {{token}} variables.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48987575",
+		"_collection_link": "https://alek-karoli-2862410.postman.co/workspace/Alek-Karoli's-Workspace~ae93230a-a489-4b81-85c4-95faa74dc4c0/collection/48987575-5a563ca4-2d9f-49a0-84be-dc16c5cc3bed?action=share&source=collection_link&creator=48987575"
+	},
+	"item": [
+		{
+			"name": "Register (POST /auth/register)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 201\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"User registed\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"{{name}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"register"
+					]
+				},
+				"description": "Registers a new user and returns user data + token."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Profile (GET /auth/profile)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"User data returned\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Test User\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/auth/profile",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"profile"
+					]
+				},
+				"description": "Get the logged-in user's profile (requires valid token)."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Profile (PUT /auth/profile)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"User updated\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Updated User\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Updated User\",\n  \"email\": \"updated@example.com\",\n  \"password\": \"newpassword\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/profile",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"profile"
+					]
+				},
+				"description": "Update the logged-in user's profile (name, email, password)."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5001"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "email",
+			"value": "user1@example.com"
+		},
+		{
+			"key": "password",
+			"value": "test123"
+		},
+		{
+			"key": "name",
+			"value": "Test User"
+		}
+	]
+}
