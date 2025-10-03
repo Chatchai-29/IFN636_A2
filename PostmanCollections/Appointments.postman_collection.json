@@ -1,0 +1,729 @@
+{
+	"info": {
+		"_postman_id": "3a6d57bd-9344-4aa2-b4f2-50f224503e14",
+		"name": "Appointments",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48987575",
+		"_collection_link": "https://alek-karoli-2862410.postman.co/workspace/Alek-Karoli's-Workspace~ae93230a-a489-4b81-85c4-95faa74dc4c0/collection/48987575-3a6d57bd-9344-4aa2-b4f2-50f224503e14?action=share&source=collection_link&creator=48987575"
+	},
+	"item": [
+		{
+			"name": "Create Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 201\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"scheduled\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 400ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(400);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}\r",
+							"const res = response;\r",
+							"if (res && res._id) {\r",
+							"  pm.collectionVariables.set(\"appointmentId\", res._id);\r",
+							"  console.log(\"appointmentId saved:\", res._id);\r",
+							"} else {\r",
+							"  console.log(\"No _id in response:\", res);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"petId\": \"68dc90f78134980d00726375\",\n  \"ownerId\": \"68d77fab6797d165c68aaaec\",\n  \"date\": \"2026-10-05\",\n  \"time\": \"14:30\",\n  \"reason\": \"Check-up\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/appointments",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Appointment (Double Booked)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Test Double booked\r",
+							"pm.test(\"Status code is 409\", function () {\r",
+							"    pm.response.to.have.status(409);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Double booking detected\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 400ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(400);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"petId\": \"68dc90f78134980d00726375\",\n  \"ownerId\": \"68d77fab6797d165c68aaaec\",\n  \"date\": \"2026-10-05\",\n  \"time\": \"14:30\",\n  \"reason\": \"Check-up\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/appointments?Content-Type=application/json&Authorization=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments"
+					],
+					"query": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Authorization",
+							"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Appointments (GET /appointments)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"List Displayed\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"scheduled\");\r",
+							"});\r",
+							"pm.test(\"JSON is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/appointments?",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				},
+				"description": "Owner sees only their own appointments; Admin/Vet can see all (and filter by ownerId)."
+			},
+			"response": []
+		},
+		{
+			"name": "Summary (GET /appointments/summary)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Date of an admin appointment matches\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"2025-10-06\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/appointments/summary?from=2025-10-01&to=2025-10-07",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"summary"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": "2025-10-01"
+						},
+						{
+							"key": "to",
+							"value": "2025-10-07"
+						}
+					]
+				},
+				"description": "Returns daily totals grouped by status. Owner sees only their data."
+			},
+			"response": []
+		},
+		{
+			"name": "Get by Id (GET /appointments/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Date of appointment matches\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"2026-10-05\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/appointments/{{appointmentId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}"
+					]
+				},
+				"description": "Owner can only access their own appointment; Admin/Vet can access any."
+			},
+			"response": []
+		},
+		{
+			"name": "Complete (PATCH /appointments/:id/complete)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Status updated to completed\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"completed\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/appointments/{{appointmentId}}/complete",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}",
+						"complete"
+					]
+				},
+				"description": "Only Admin/Vet can complete; cannot complete a cancelled appointment."
+			},
+			"response": []
+		},
+		{
+			"name": "Replace (PUT /appointments/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Reason replaced and matches\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Vaccination\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"petId\": \"68dc90f78134980d00726375\",\n  \"ownerId\": \"68d77fab6797d165c68aaaec\",\n  \"date\": \"2025-10-07\",\n  \"time\": \"09:15\",\n  \"reason\": \"Vaccination\",\n  \"status\": \"scheduled\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/appointments/{{appointmentId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}"
+					]
+				},
+				"description": "Full update. Owner can only update their own; server checks conflicts when status=scheduled."
+			},
+			"response": []
+		},
+		{
+			"name": "Update (PATCH /appointments/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Reason matches\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Updated\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"date\": \"2025-10-06\",\n  \"time\": \"16:30\",\n  \"reason\": \"Updated\",\n  \"status\": \"scheduled\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/appointments/{{appointmentId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}"
+					]
+				},
+				"description": "Owner can only update their own. If status=scheduled, server checks for double booking."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel (PATCH /appointments/:id/cancel)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Appointment cancelled and status is set to cancelled\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"cancelled\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/appointments/{{appointmentId}}/cancel",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}",
+						"cancel"
+					]
+				},
+				"description": "Owner can only cancel their own appointment; returns populated owner/pet."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete (DELETE /appointments/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Appointment Deleted, correct message sent\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Appointment deleted\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 500ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"// Save JWT token to environment variable (adjust key as needed)\r",
+							"if (response.token) {\r",
+							"pm.environment.set(\"jwt_token\", response.token);\r",
+							"console.log(\"JWT Token saved to environment\");\r",
+							"} else {\r",
+							"console.warn(\"No token found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWVlOTQ0NmYxZGVjNDQ0ZjFkNjBmYyIsImlhdCI6MTc1OTQ3NDU0NiwiZXhwIjoxNzYyMDY2NTQ2fQ.ePPcJZQDLH9PYZFRHxC53U0aGFo5ZIwm8xu8g1PwaJE",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/appointments/{{appointmentId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}"
+					]
+				},
+				"description": "Owner can only delete their own appointment."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": ""
+		},
+		{
+			"key": "appointmentId",
+			"value": ""
+		}
+	]
+}
