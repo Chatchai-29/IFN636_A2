@@ -1,0 +1,258 @@
+{
+	"info": {
+		"_postman_id": "d4c23026-26d8-4208-bcf4-8b9d040e6411",
+		"name": "Pets",
+		"description": "Pets CRUD API routes: list, create, update, delete. Uses {{base_url}} and {{petId}} variables.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48987575",
+		"_collection_link": "https://alek-karoli-2862410.postman.co/workspace/Alek-Karoli's-Workspace~ae93230a-a489-4b81-85c4-95faa74dc4c0/collection/48987575-d4c23026-26d8-4208-bcf4-8b9d040e6411?action=share&source=collection_link&creator=48987575"
+	},
+	"item": [
+		{
+			"name": "Get All Pets (GET /pets)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Pet list returned\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"type\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/pets",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"pets"
+					]
+				},
+				"description": "Returns all pets, populated with owner info (name, phone)."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Pet (POST /pets)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body",
+							"let response = pm.response.json();",
+							"// Successful status is 201",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Fluffy Created\", function () {",
+							"pm.expect(pm.response.text()).to.include(\"Fluffy\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"pm.test(\"Response time is less than 200ms\", function",
+							"() {",
+							"pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});",
+							"",
+							"",
+							"// Save petId from response to collection variable",
+							"const res = pm.response.json();",
+							"if (res && res._id) {",
+							"  pm.collectionVariables.set('petId', res._id);",
+							"  console.log('Saved petId:', res._id);",
+							"} else {",
+							"  console.log('No _id in response:', res);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Fluffy\",\n  \"type\": \"Cat\",\n  \"breed\": \"Persian\",\n  \"age\": 3,\n  \"ownerId\": \"689ee9446f1dec444f1d60fc\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/pets",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"pets"
+					]
+				},
+				"description": "Creates a new pet. Replace {{ownerId}} with a valid Owner _id."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Pet (PUT /pets/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Fluffy updated\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Fluffy Updated\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Fluffy Updated\",\n  \"type\": \"Cat\",\n  \"breed\": \"Maine Coon\",\n  \"age\": 4\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/pets/{{petId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"pets",
+						"{{petId}}"
+					]
+				},
+				"description": "Updates an existing pet by id. petId is auto-filled from Create Pet response if tests script runs."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Pet (DELETE /pets/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Fluffy Deleted :(\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Pet deleted\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/pets/{{petId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"pets",
+						"{{petId}}"
+					]
+				},
+				"description": "Deletes a pet by id. Uses {{petId}} variable."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5001"
+		},
+		{
+			"key": "petId",
+			"value": "REPLACE_WITH_PET_ID"
+		},
+		{
+			"key": "ownerId",
+			"value": "REPLACE_WITH_OWNER_ID"
+		}
+	]
+}
