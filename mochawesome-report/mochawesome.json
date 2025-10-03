@@ -1,0 +1,331 @@
+{
+  "stats": {
+    "suites": 4,
+    "tests": 10,
+    "passes": 10,
+    "pending": 0,
+    "failures": 0,
+    "start": "2025-10-03T08:21:13.497Z",
+    "end": "2025-10-03T08:21:13.508Z",
+    "duration": 11,
+    "testsRegistered": 10,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "b89523f2-443e-4f6d-88f3-c97a0329b61a",
+      "title": "",
+      "fullFile": "",
+      "file": "",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "6b7d00c2-aac1-4cf9-ac5f-7fc3ef4935f2",
+          "title": "AddTask Function Test",
+          "fullFile": "C:\\Users\\chatc\\IFN636_A2\\backend\\test\\example_test.js",
+          "file": "\\backend\\test\\example_test.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should create a new task successfully",
+              "fullTitle": "AddTask Function Test should create a new task successfully",
+              "timedOut": false,
+              "duration": 2,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Mock request data\nconst req = {\n  user: { id: new mongoose.Types.ObjectId() },\n  body: { title: \"New Task\", description: \"Task description\", deadline: \"2025-12-31\" }\n};\n// Mock task that would be created\nconst createdTask = { _id: new mongoose.Types.ObjectId(), ...req.body, userId: req.user.id };\n// Stub Task.create to return the createdTask\nconst createStub = sinon.stub(Task, 'create').resolves(createdTask);\n// Mock response object\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\n// Call function\nawait addTask(req, res);\n// Assertions\nexpect(createStub.calledOnceWith({ userId: req.user.id, ...req.body })).to.be.true;\nexpect(res.status.calledWith(201)).to.be.true;\nexpect(res.json.calledWith(createdTask)).to.be.true;\n// Restore stubbed methods\ncreateStub.restore();",
+              "err": {},
+              "uuid": "52c8545b-d63f-4799-8c8f-a28a5bad0cf4",
+              "parentUUID": "6b7d00c2-aac1-4cf9-ac5f-7fc3ef4935f2",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should return 500 if an error occurs",
+              "fullTitle": "AddTask Function Test should return 500 if an error occurs",
+              "timedOut": false,
+              "duration": 1,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Stub Task.create to throw an error\nconst createStub = sinon.stub(Task, 'create').throws(new Error('DB Error'));\n// Mock request data\nconst req = {\n  user: { id: new mongoose.Types.ObjectId() },\n  body: { title: \"New Task\", description: \"Task description\", deadline: \"2025-12-31\" }\n};\n// Mock response object\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\n// Call function\nawait addTask(req, res);\n// Assertions\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.calledWithMatch({ message: 'DB Error' })).to.be.true;\n// Restore stubbed methods\ncreateStub.restore();",
+              "err": {},
+              "uuid": "bafdd2e3-ce22-4778-b569-8e96a3cf19d4",
+              "parentUUID": "6b7d00c2-aac1-4cf9-ac5f-7fc3ef4935f2",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "52c8545b-d63f-4799-8c8f-a28a5bad0cf4",
+            "bafdd2e3-ce22-4778-b569-8e96a3cf19d4"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 3,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 15000
+        },
+        {
+          "uuid": "58b72d17-2207-4699-817e-563aedb46eca",
+          "title": "Update Function Test",
+          "fullFile": "C:\\Users\\chatc\\IFN636_A2\\backend\\test\\example_test.js",
+          "file": "\\backend\\test\\example_test.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should update task successfully",
+              "fullTitle": "Update Function Test should update task successfully",
+              "timedOut": false,
+              "duration": 1,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Mock task data\nconst taskId = new mongoose.Types.ObjectId();\nconst existingTask = {\n  _id: taskId,\n  title: \"Old Task\",\n  description: \"Old Description\",\n  completed: false,\n  deadline: new Date(),\n  save: sinon.stub().resolvesThis(), // Mock save method\n};\n// Stub Task.findById to return mock task\nconst findByIdStub = sinon.stub(Task, 'findById').resolves(existingTask);\n// Mock request & response\nconst req = {\n  params: { id: taskId },\n  body: { title: \"New Task\", completed: true }\n};\nconst res = {\n  json: sinon.spy(), \n  status: sinon.stub().returnsThis()\n};\n// Call function\nawait updateTask(req, res);\n// Assertions\nexpect(existingTask.title).to.equal(\"New Task\");\nexpect(existingTask.completed).to.equal(true);\nexpect(res.status.called).to.be.false; // No error status should be set\nexpect(res.json.calledOnce).to.be.true;\n// Restore stubbed methods\nfindByIdStub.restore();",
+              "err": {},
+              "uuid": "e71f3f76-ac41-441d-85ef-c4a7131e9389",
+              "parentUUID": "58b72d17-2207-4699-817e-563aedb46eca",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should return 404 if task is not found",
+              "fullTitle": "Update Function Test should return 404 if task is not found",
+              "timedOut": false,
+              "duration": 0,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "const findByIdStub = sinon.stub(Task, 'findById').resolves(null);\nconst req = { params: { id: new mongoose.Types.ObjectId() }, body: {} };\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\nawait updateTask(req, res);\nexpect(res.status.calledWith(404)).to.be.true;\nexpect(res.json.calledWith({ message: 'Task not found' })).to.be.true;\nfindByIdStub.restore();",
+              "err": {},
+              "uuid": "aef1af82-dc33-44f8-89f3-9c863c0513e2",
+              "parentUUID": "58b72d17-2207-4699-817e-563aedb46eca",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should return 500 on error",
+              "fullTitle": "Update Function Test should return 500 on error",
+              "timedOut": false,
+              "duration": 0,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "const findByIdStub = sinon.stub(Task, 'findById').throws(new Error('DB Error'));\nconst req = { params: { id: new mongoose.Types.ObjectId() }, body: {} };\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\nawait updateTask(req, res);\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.called).to.be.true;\nfindByIdStub.restore();",
+              "err": {},
+              "uuid": "5663dbff-e42c-4b8a-865b-e776308116f3",
+              "parentUUID": "58b72d17-2207-4699-817e-563aedb46eca",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "e71f3f76-ac41-441d-85ef-c4a7131e9389",
+            "aef1af82-dc33-44f8-89f3-9c863c0513e2",
+            "5663dbff-e42c-4b8a-865b-e776308116f3"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 1,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 15000
+        },
+        {
+          "uuid": "6c01c3a1-b929-4a19-aece-f740264221ef",
+          "title": "GetTask Function Test",
+          "fullFile": "C:\\Users\\chatc\\IFN636_A2\\backend\\test\\example_test.js",
+          "file": "\\backend\\test\\example_test.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should return tasks for the given user",
+              "fullTitle": "GetTask Function Test should return tasks for the given user",
+              "timedOut": false,
+              "duration": 1,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Mock user ID\nconst userId = new mongoose.Types.ObjectId();\n// Mock task data\nconst tasks = [\n  { _id: new mongoose.Types.ObjectId(), title: \"Task 1\", userId },\n  { _id: new mongoose.Types.ObjectId(), title: \"Task 2\", userId }\n];\n// Stub Task.find to return mock tasks\nconst findStub = sinon.stub(Task, 'find').resolves(tasks);\n// Mock request & response\nconst req = { user: { id: userId } };\nconst res = {\n  json: sinon.spy(),\n  status: sinon.stub().returnsThis()\n};\n// Call function\nawait getTasks(req, res);\n// Assertions\nexpect(findStub.calledOnceWith({ userId })).to.be.true;\nexpect(res.json.calledWith(tasks)).to.be.true;\nexpect(res.status.called).to.be.false; // No error status should be set\n// Restore stubbed methods\nfindStub.restore();",
+              "err": {},
+              "uuid": "8d0c2e70-775d-48e6-85d2-7414fa7e0ea4",
+              "parentUUID": "6c01c3a1-b929-4a19-aece-f740264221ef",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should return 500 on error",
+              "fullTitle": "GetTask Function Test should return 500 on error",
+              "timedOut": false,
+              "duration": 0,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Stub Task.find to throw an error\nconst findStub = sinon.stub(Task, 'find').throws(new Error('DB Error'));\n// Mock request & response\nconst req = { user: { id: new mongoose.Types.ObjectId() } };\nconst res = {\n  json: sinon.spy(),\n  status: sinon.stub().returnsThis()\n};\n// Call function\nawait getTasks(req, res);\n// Assertions\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.calledWithMatch({ message: 'DB Error' })).to.be.true;\n// Restore stubbed methods\nfindStub.restore();",
+              "err": {},
+              "uuid": "b59ddb39-8fba-4a14-91ea-650f7abb1796",
+              "parentUUID": "6c01c3a1-b929-4a19-aece-f740264221ef",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "8d0c2e70-775d-48e6-85d2-7414fa7e0ea4",
+            "b59ddb39-8fba-4a14-91ea-650f7abb1796"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 1,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 15000
+        },
+        {
+          "uuid": "3bf09733-d057-42fa-8091-54947c339c10",
+          "title": "DeleteTask Function Test",
+          "fullFile": "C:\\Users\\chatc\\IFN636_A2\\backend\\test\\example_test.js",
+          "file": "\\backend\\test\\example_test.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should delete a task successfully",
+              "fullTitle": "DeleteTask Function Test should delete a task successfully",
+              "timedOut": false,
+              "duration": 1,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Mock request data\nconst req = { params: { id: new mongoose.Types.ObjectId().toString() } };\n// Mock task found in the database\nconst task = { remove: sinon.stub().resolves() };\n// Stub Task.findById to return the mock task\nconst findByIdStub = sinon.stub(Task, 'findById').resolves(task);\n// Mock response object\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\n// Call function\nawait deleteTask(req, res);\n// Assertions\nexpect(findByIdStub.calledOnceWith(req.params.id)).to.be.true;\nexpect(task.remove.calledOnce).to.be.true;\nexpect(res.json.calledWith({ message: 'Task deleted' })).to.be.true;\n// Restore stubbed methods\nfindByIdStub.restore();",
+              "err": {},
+              "uuid": "3701475f-f9c6-4221-afe6-98aa5ff33ce4",
+              "parentUUID": "3bf09733-d057-42fa-8091-54947c339c10",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should return 404 if task is not found",
+              "fullTitle": "DeleteTask Function Test should return 404 if task is not found",
+              "timedOut": false,
+              "duration": 1,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Stub Task.findById to return null\nconst findByIdStub = sinon.stub(Task, 'findById').resolves(null);\n// Mock request data\nconst req = { params: { id: new mongoose.Types.ObjectId().toString() } };\n// Mock response object\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\n// Call function\nawait deleteTask(req, res);\n// Assertions\nexpect(findByIdStub.calledOnceWith(req.params.id)).to.be.true;\nexpect(res.status.calledWith(404)).to.be.true;\nexpect(res.json.calledWith({ message: 'Task not found' })).to.be.true;\n// Restore stubbed methods\nfindByIdStub.restore();",
+              "err": {},
+              "uuid": "994d44ee-8cb3-4988-8d58-f21aadf5f748",
+              "parentUUID": "3bf09733-d057-42fa-8091-54947c339c10",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should return 500 if an error occurs",
+              "fullTitle": "DeleteTask Function Test should return 500 if an error occurs",
+              "timedOut": false,
+              "duration": 0,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "// Stub Task.findById to throw an error\nconst findByIdStub = sinon.stub(Task, 'findById').throws(new Error('DB Error'));\n// Mock request data\nconst req = { params: { id: new mongoose.Types.ObjectId().toString() } };\n// Mock response object\nconst res = {\n  status: sinon.stub().returnsThis(),\n  json: sinon.spy()\n};\n// Call function\nawait deleteTask(req, res);\n// Assertions\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.calledWithMatch({ message: 'DB Error' })).to.be.true;\n// Restore stubbed methods\nfindByIdStub.restore();",
+              "err": {},
+              "uuid": "8b9e5394-81e8-4147-b06a-bdc9b8311dfd",
+              "parentUUID": "3bf09733-d057-42fa-8091-54947c339c10",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "3701475f-f9c6-4221-afe6-98aa5ff33ce4",
+            "994d44ee-8cb3-4988-8d58-f21aadf5f748",
+            "8b9e5394-81e8-4147-b06a-bdc9b8311dfd"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 2,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 15000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 15000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "11.7.4"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": null,
+      "version": "6.3.0"
+    }
+  }
+}

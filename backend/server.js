@@ -24,6 +24,7 @@ const ALLOW_LIST = new Set([
   'http://13.239.237.156:5001',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'http://54.252.244.102:3000'
 ]);
 
 const corsOptions = {

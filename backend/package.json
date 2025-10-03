@@ -1,33 +1,37 @@
 {
-  "name": "task-manager-backend",
+  "name": "ifn636-a2-backend",
   "version": "1.0.0",
-  "description": "Backend for Task Manager App",
+  "description": "Backend API for IFN636 A2 (Appointments, Prescriptions, Invoices, Tasks, RBAC)",
   "main": "server.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test mocha ./test/**/*.js",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "test:one": "cross-env NODE_ENV=test mocha --timeout 15000",
+    "test:example": "cross-env NODE_ENV=test mocha test/example_test.js --timeout 15000 --reporter mochawesome",
+    "test:watch": "cross-env NODE_ENV=test mocha \"test/**/*.spec.js\" --watch --reporter spec"
   },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.0.1",
-    "chai-http": "^4.3.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.0.14",
-    "request": "^2.88.2",
-    "socket.io": "^4.8.1",
-    "task-manager": "file:.."
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.6.1",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "chai": "^5.2.1",
-    "cross-env": "^10.0.0",
-    "esm": "^3.2.25",
-    "mocha": "^11.7.1",
-    "nodemon": "^2.0.15",
-    "sinon": "^19.0.5"
-  },
-  "author": "Task Manager Team",
-  "license": "ISC"
+    "chai": "^5.2.0",
+    "chai-http": "^5.1.2",
+    "cross-env": "^7.0.3",
+    "mocha": "^10.7.3",
+    "mochawesome": "^7.1.3",
+    "mongodb-memory-server": "^10.1.4",
+    "nodemon": "^3.1.7",
+    "sinon": "^17.0.1",
+    "supertest": "^7.0.0"
+  }
 }
