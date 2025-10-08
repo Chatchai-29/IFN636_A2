@@ -162,7 +162,6 @@ describe('Unit: Prescription Controller', () => {
     const req = { params: { id: 'rx-1' }, user: { id: 'vet-1', role: 'vet' } };
     const res = mockRes();
 
-    // รองรับทั้งสองแนวทางใน controller
     const findByIdStub = sinon.stub(Prescription, 'findById').resolves({
       _id: 'rx-1',
       deleteOne: async () => ({ acknowledged: true, deletedCount: 1 })

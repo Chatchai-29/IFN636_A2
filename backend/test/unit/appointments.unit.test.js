@@ -10,7 +10,7 @@ function loadController() {
 }
 function firstFn(obj, names) {
   for (const n of names) if (obj && typeof obj[n] === 'function') return obj[n].bind(obj);
-  return null; // << ไม่โยน error
+  return null; 
 }
 
 const ctrl = loadController();
@@ -21,7 +21,6 @@ const updateFn = firstFn(ctrl, [
   'setStatus','completeAppointment','cancelAppointment','complete','cancel'
 ]);
 
-// ถ้า controller ไม่มีเมธอด delete ให้ fallback
 let deleteFn = firstFn(ctrl, ['deleteAppointment','removeAppointment','delete','remove','destroy']);
 
 const Appointment = (() => {
@@ -37,7 +36,6 @@ function mockRes() {
   return res;
 }
 
-// ถ้าไม่พบ deleteFn ให้ทำ fallback ที่ลบผ่านโมเดล (รองรับได้ทั้ง 200/204)
 if (!deleteFn) {
   deleteFn = async (req, res) => {
     const id = req.params?.id;
@@ -50,7 +48,6 @@ if (!deleteFn) {
       doc = found;
     }
     if (!doc) return res.status(404).json({ message: 'not found' });
-    // บาง controller คืน 200 พร้อม body, บางตัว 204
     return res.status(204).json({});
   };
 }

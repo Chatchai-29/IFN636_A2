@@ -1,4 +1,3 @@
-// Ensure test JWT matches server verify secret
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'TEST_ONLY_SECRET_change_me';
 
 const User = require('../models/User');
@@ -15,7 +14,7 @@ function makeToken({ id, email, role, name }) {
   return jwt.sign(claims, SECRET, { algorithm: 'HS256', expiresIn: '1h' });
 }
 
-/* ---------- query helper (chainable + sort/limit/skip/where) ---------- */
+/* query helper (chainable + sort/limit/skip/where) */
 function withId(doc) { return (doc && doc._id && !doc.id) ? { id: String(doc._id), ...doc } : doc; }
 
 function makeQuery(initialData) {
@@ -90,15 +89,15 @@ describe('RBAC: /api/prescriptions', () => {
     const r2 = await request(app)
       .post('/api/prescriptions')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ /* ตั้งใจเว้นให้ validation ล้ม */ })
-      // อาจ 400 (validation) หรือ 403 (RBAC)
+      .send({ /* prevent validation fails */ })
+      // maybe 400 (validation) or 403 (RBAC)
       .expect(res => {
         if (![400, 403].includes(res.status)) {
           throw new Error(`expected 400 or 403, got ${res.status}`);
         }
       });
 
-    // ยอมรับข้อความ validation ด้วย (required/invalid/missing)
+    // allow validation with (required/invalid/missing)
     expect(String(r2.body?.message || r2.text || '')).to.match(
       /not allowed|forbidden|access denied|bad request|required|invalid|missing/i
     );

@@ -1,4 +1,3 @@
-// Ensure test JWT matches server verify secret
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'TEST_ONLY_SECRET_change_me';
 
 const request = require('supertest');
@@ -34,7 +33,6 @@ describe('Fuzz: reason/diagnosis input', () => {
         .set('Authorization', `Bearer ${vet}`)
         .send({ petId: 'p1', date: '2025-10-10', time: '10:00', reason });
 
-      // ยอมรับผลลัพธ์ปกติหรือ validation error แต่ต้องไม่ 5xx
       expect([200, 201, 400, 401, 403, 404, 422]).to.include(r.status);
       expect((r.text || '').toLowerCase()).to.not.match(/stack|trace|sql/i);
     }

@@ -1,4 +1,3 @@
-// Ensure test JWT matches server verify secret
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'TEST_ONLY_SECRET_change_me';
 
 const request = require('supertest');
@@ -10,14 +9,13 @@ const app = require('../server');
 const Appointment = require('../models/AppointmentModel');
 const User = require('../models/User');
 
-// ---- ออก JWT ภายในไฟล์นี้ ให้มี id/email/role ครบ ----
 const SECRET = process.env.JWT_SECRET || 'TEST_ONLY_SECRET_change_me';
 function makeToken({ id, email, role, name }) {
   const claims = { id, _id: id, sub: id, email, role, name: name || `${role}-tester` };
   return jwt.sign(claims, SECRET, { algorithm: 'HS256', expiresIn: '1h' });
 }
 
-/* ---------- query helper (chainable + filter/sort/limit/skip/where) ---------- */
+/*  query helper (chainable + filter/sort/limit/skip/where)  */
 function withId(doc) { return (doc && doc._id && !doc.id) ? { id: String(doc._id), ...doc } : doc; }
 
 function makeQuery(initialData) {
@@ -56,7 +54,7 @@ describe('Owner scope: /api/appointments', () => {
   const ownerB = makeToken({ id: 'ob', role: 'owner', email: 'ob@example.com' });
 
   beforeEach(() => {
-    // stub auth lookup (ต้องคืน query chainable)
+    // stub auth lookup (recall query chainable)
     sinon.stub(User, 'findOne').callsFake((qf) => {
       const email = qf?.email;
       const id = email === 'oa@example.com' ? 'oa' : 'ob';
@@ -66,7 +64,7 @@ describe('Owner scope: /api/appointments', () => {
       makeQuery({ _id: id, role: 'owner', email: id === 'oa' ? 'oa@example.com' : 'ob@example.com' })
     );
 
-    // ฟิกซ์เจอร์ appointments
+    // appointments
     const rows = [
       { _id: 'a1', ownerId: 'oa', createdAt: 3 },
       { _id: 'a2', ownerId: 'oa', createdAt: 2 },
@@ -81,7 +79,7 @@ describe('Owner scope: /api/appointments', () => {
       return makeQuery(filtered);
     });
 
-    // countDocuments (ถ้าคอนโทรลเลอร์เรียก)
+    // countDocuments
     sinon.stub(Appointment, 'countDocuments').callsFake((query = {}) => {
       const qOwner = query.ownerId || query.owner;
       let count = rows.length;
@@ -98,7 +96,7 @@ describe('Owner scope: /api/appointments', () => {
       .get('/api/appointments/mine')
       .set('Authorization', `Bearer ${ownerA}`);
 
-    // อนุโลมชั่วคราวถ้าระบบยังตอบ 500
+    // allow 500
     expect([200, 500]).to.include(res.status);
 
     if (res.status === 200) {
@@ -111,7 +109,7 @@ describe('Owner scope: /api/appointments', () => {
   });
 
   it('PATCH other people’s appointment -> 403', async () => {
-    // ต้องมี save() ป้องกัน current.save is not a function
+    // must have save() protect current.save is not a function
     sinon.stub(Appointment, 'findById').resolves({
       _id: 'x', ownerId: 'oa', save: async function () { return this; }
     });
@@ -121,7 +119,7 @@ describe('Owner scope: /api/appointments', () => {
       .set('Authorization', `Bearer ${ownerB}`)
       .send({ status: 'cancelled' });
 
-    // อนุโลม 200/400/403 ตามพฤติกรรมระบบปัจจุบัน
+    // allow 200/400/403
     expect([200, 400, 403]).to.include(res.status);
     if (res.status !== 200) {
       expect(String(res.body?.message || res.text || '')).to.match(/forbidden|not allowed|access denied|bad request/i);

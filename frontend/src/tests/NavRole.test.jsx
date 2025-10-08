@@ -9,7 +9,7 @@ test('Owner nav is themed and links to Owner Dashboard', () => {
     </MemoryRouter>
   );
   const nav = screen.getByRole('navigation');
-  expect(nav.className).toMatch(/owner-theme|bg-owner|owner-nav/i); // ตามคลาสที่คุณใช้จริง
+  expect(nav.className).toMatch(/owner-theme|bg-owner|owner-nav/i);
   const ownerLink = screen.getByRole('link', { name: /dashboard/i });
   expect(ownerLink.getAttribute('href')).toMatch(/owner\/dashboard/i);
 });
