@@ -1,62 +1,37 @@
+// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect middleware: verify JWT token
-const protect = async (req, res, next) => {
-  let token;
+exports.protect = async (req, res, next) => {
+  try {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ message: 'Access denied' });
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Attach user to request (excluding password)
-      // ⚠️ CRITICAL: Must include 'role' field for authorization
-      req.user = await User.findById(decoded.id).select('-password');
-      
-      if (!req.user) {
-        return res.status(401).json({ message: 'User not found' });
-      }
-      
-      // Debug log to verify role is present
-      console.log('[protect] User authenticated:', { 
-        id: req.user._id, 
-        email: req.user.email, 
-        role: req.user.role 
-      });
-      
-      next();
-    } catch (error) {
-      console.error('[protect] Token verification failed:', error.message);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
-    }
-  } else {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // รองรับทั้ง id, _id, sub จาก token
+    let userQ = User.findById(decoded.id || decoded._id || decoded.sub);
+    if (userQ && typeof userQ.select === 'function') userQ = userQ.select('_id id email role name');
+    const user = userQ && typeof userQ.lean === 'function' ? await userQ.lean() : await userQ;
+
+    if (!user) return res.status(401).json({ message: 'Access denied' });
+
+    // ใส่ทั้ง _id และ id ให้คอนโทรลเลอร์ทุกรูปแบบใช้ได้
+    req.user = {
+      _id: user._id ?? user.id,
+      id: (user.id ?? String(user._id)),
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    };
+
+    console.log('[protect] User authenticated:', {
+      id: req.user.id, email: req.user.email, role: req.user.role,
+    });
+    next();
+  } catch (err) {
+    console.log('[protect] Token verification failed:', err.message);
+    return res.status(401).json({ message: 'Access denied' });
   }
 };
-
-// Role-based access control
-const checkRole = (...allowedRoles) => {
-  return (req, res, next) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
-      
-      if (!allowedRoles.includes(req.user.role)) {
-        console.log('[checkRole] Access denied:', {
-          user: req.user.email,
-          userRole: req.user.role,
-          allowedRoles
-        });
-        return res.status(403).json({ message: 'Forbidden' });
-      }
-      
-      next();
-    } catch (e) {
-      next(e);
-    }
-  };
-};
-
-module.exports = { protect, checkRole };
