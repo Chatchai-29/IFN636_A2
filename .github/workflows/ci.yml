@@ -2,63 +2,75 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - '**'               
   pull_request:
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:         
 
 jobs:
-  backend-tests:
-    name: Backend Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      # 1) checkout code
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 2) setup node
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
-
-      # 3) install backend deps
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: npm ci
-
-      # 4) run backend tests
-      - name: Run Backend Tests
-        working-directory: ./backend
-        env:
-          NODE_ENV: test
-        run: NODE_ENV=test npm test
-
-
-  frontend-build:
-    name: Frontend Build
+  # Frontend (FE)
+  frontend:
+    name: Frontend
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Use Node (FE)
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
+      - name: Install FE deps (clean)
+        working-directory: frontend
         run: npm ci
 
-      - name: Build Frontend
-        working-directory: ./frontend
+      - name: Build FE
+        working-directory: frontend
         run: npm run build
+
+      - name: Test FE
+        working-directory: frontend
+        run: npm test --if-present
+
+      - name: Upload FE build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fe-build
+          path: |
+            frontend/dist
+            frontend/build
+          if-no-files-found: ignore
+
+  # Backend
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node (BE)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json 
+
+      - name: Install BE deps (clean)
+        working-directory: backend
+        run: npm ci
+
+      - name: Test BE (all)
+        working-directory: backend
+        run: npm test
+
+      - name: Upload mochawesome report (BE)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report
+          path: backend/mochawesome-report
+          if-no-files-found: ignore
