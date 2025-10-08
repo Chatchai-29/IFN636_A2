@@ -8,11 +8,6 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
 
-    # run job backend
-    defaults:
-      run:
-        working-directory: backend
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,17 +15,16 @@ jobs:
       - name: Use Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          # cache  lockfile  backend only
-          cache-dependency-path: backend/package-lock.json
+          node-version: 20                    
+          cache: npm                          
+          cache-dependency-path: backend/package-lock.json   
 
-      #  lockfile (เร็ว/เสถียรสำหรับ CI)
       - name: Install (clean)
+        working-directory: backend            
         run: npm ci
 
-      # (integration + MBT + RBAC + fuzz)
-      - name: Run tests
+      - name: Test
+        working-directory: backend           
         run: npm test
 
       - name: Upload mochawesome report
