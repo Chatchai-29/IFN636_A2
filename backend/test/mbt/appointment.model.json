@@ -1,0 +1,65 @@
+{
+  "name": "AppointmentLifecycleModel",
+  "states": ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW", "CANCELLED", "INVOICED"],
+  "initial": "PENDING",
+  "roles": ["owner", "vet", "admin"],
+  "transitions": [
+    {
+      "id": "confirm",
+      "from": ["PENDING"],
+      "to": "CONFIRMED",
+      "allowedRoles": ["vet", "admin"],
+      "guards": ["noInvoice"]
+    },
+    {
+      "id": "complete",
+      "from": ["CONFIRMED"],
+      "to": "COMPLETED",
+      "allowedRoles": ["vet", "admin"],
+      "guards": ["noInvoice"]
+    },
+    {
+      "id": "no_show",
+      "from": ["CONFIRMED"],
+      "to": "NO_SHOW",
+      "allowedRoles": ["vet", "admin"],
+      "guards": ["noInvoice"]
+    },
+    {
+      "id": "cancel",
+      "from": ["PENDING", "CONFIRMED"],
+      "to": "CANCELLED",
+      "allowedRoles": ["owner", "vet", "admin"],
+      "guards": ["noInvoice"]
+    },
+    {
+      "id": "invoice",
+      "from": ["COMPLETED", "NO_SHOW"],
+      "to": "INVOICED",
+      "allowedRoles": ["admin", "vet"],
+      "guards": ["notCancelled"]
+    },
+    {
+      "id": "prescribe",
+      "from": ["CONFIRMED", "COMPLETED"],
+      "to": null,
+      "allowedRoles": ["vet"],
+      "guards": ["notCancelled", "noInvoice"]
+    }
+  ],
+  "guards": {
+    "noInvoice": "currentState !== 'INVOICED'",
+    "notCancelled": "currentState !== 'CANCELLED'"
+  },
+  "actions": {
+    "confirm": { "type": "PATCH_STATUS", "payload": { "status": "CONFIRMED" } },
+    "complete": { "type": "PATCH_STATUS", "payload": { "status": "COMPLETED" } },
+    "no_show": { "type": "PATCH_STATUS", "payload": { "status": "NO_SHOW" } },
+    "cancel": { "type": "PATCH_STATUS", "payload": { "status": "CANCELLED" } },
+    "invoice": { "type": "CREATE_INVOICE" },
+    "prescribe": {
+      "type": "CREATE_PRESCRIPTION",
+      "payload": { "petId": "pet-1", "meds": [{ "name": "Amoxy", "dose": "1 tab" }] }
+    }
+  }
+}
