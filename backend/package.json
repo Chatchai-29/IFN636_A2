@@ -6,20 +6,16 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-
     "//--- Test: master switches ---": "--------------------------------------",
     "test": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me mocha \"test/**/*.test.js\" --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,overwrite=true,html=true,json=true --timeout 15000",
     "test:watch": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me mocha \"test/**/*.test.js\" -w --reporter spec --timeout 15000",
     "test:one": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me mocha --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,overwrite=true,html=true,json=true --timeout 15000",
-
     "//--- Test: focused groups ---": "--------------------------------------",
     "test:unit": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me mocha \"test/unit/**/*.test.js\" --reporter spec --timeout 15000",
     "test:api": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me mocha \"test/api/**/*.test.js\" --reporter spec --timeout 15000",
     "test:mbt": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me mocha \"test/mbt/**/*.test.js\" --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,overwrite=true,html=true,json=true --timeout 20000",
-
     "//--- Coverage ---": "--------------------------------------",
     "coverage": "cross-env NODE_ENV=test JWT_SECRET=TEST_ONLY_SECRET_change_me nyc --reporter=lcov --reporter=text mocha \"test/**/*.test.js\" --timeout 15000",
-
     "//--- Utilities ---": "--------------------------------------",
     "clean:reports": "rimraf mochawesome-report .nyc_output coverage"
   },
